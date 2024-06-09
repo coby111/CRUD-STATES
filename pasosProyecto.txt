@@ -1,0 +1,48 @@
+//Instalar Nest CLI
+npm i -g @nestjs/cli
+
+//Nuevo proyecto
+nest new nombre-del-proyecto
+
+//Instalar Prisma CLI
+npm install prisma --save-dev
+npx prisma init
+npm install @prisma/client
+
+
+//Generar el cliente de Prisma
+npx prisma generate
+
+//Crear un repositorio en GitHub.
+//Inicializar git y realizar el primer commit
+git init
+git add .
+git commit -m "Initial commit"
+git branch -M main
+git remote add origin {URL}
+git push -u origin main
+
+
+//Migracion de la BD
+npx prisma migrate dev --name init_db
+
+//Crear modulos, controladores y servicios
+nest g module state
+nest g controller state
+nest g service state
+
+nest g module municipality
+nest g controller municipality
+nest g service municipality
+
+nest g module locality
+nest g controller locality
+nest g service locality
+
+nest g module customer
+nest g controller customer
+nest g service customer
+
+nest g module address
+nest g controller address
+nest g service address

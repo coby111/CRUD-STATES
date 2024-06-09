@@ -1,0 +1,62 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model State {
+  id              Int               @id @default(autoincrement()) 
+  name            String            @db.VarChar(60)
+  municipalities  Municipality[]
+}
+
+model Municipality {
+  id          Int       @id @default(autoincrement()) 
+  name        String    @db.VarChar(60)
+  stateId     Int
+  state       State     @relation(fields: [stateId], references: [id])
+
+  localities Locality[] 
+  
+}
+
+model Locality {
+  id               Int           @id @default(autoincrement()) 
+  name             String        @db.VarChar(70)
+  municipalityId   Int
+  municipality     Municipality  @relation(fields: [municipalityId], references: [id])
+  address          Address[]
+}
+
+model Customer {
+  id          Int         @id @default(autoincrement()) 
+  name        String      @db.VarChar(128)
+  firstName   String      @db.VarChar(60)
+  lastName    String      @db.VarChar(60)
+  rfc         String      @db.VarChar(13)
+  email       String      @db.VarChar(100)
+  phone       Int
+  status      Boolean     @default(true)
+  address     Address[]
+}
+
+model Address {
+  id                Int         @id @default(autoincrement()) 
+  customerId        Int
+  localityId        Int
+  street            String      @db.VarChar(128)
+  exteriorNumber    String      @db.VarChar(10)
+  interiorNumber    String      @db.VarChar(10)
+  postalCode        String      @db.VarChar(10)
+  customer          Customer    @relation(fields: [customerId], references: [id])
+  locality          Locality    @relation(fields: [localityId], references: [id])
+}
