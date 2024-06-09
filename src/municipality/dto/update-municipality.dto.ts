@@ -1,4 +1,7 @@
-export class UpdateMunicipalityDto {
-  name: string;
-  satateId?: number;
+import { PartialType } from '@nestjs/mapped-types';
+import { CreateMunicipalityDto } from './create-municipality.dto';
+
+export class UpdateMunicipalityDto extends PartialType(CreateMunicipalityDto) {
+    name: string;
+    stateId?: number;
 }

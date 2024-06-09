@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { MunicipalityController } from './municipality.controller';
 import { MunicipalityService } from './municipality.service';
+import { MunicipalityController } from './municipality.controller';
 
 @Module({
   controllers: [MunicipalityController],
