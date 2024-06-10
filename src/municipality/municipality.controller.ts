@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
 import { MunicipalityService } from './municipality.service';
 import { CreateMunicipalityDto } from './dto/create-municipality.dto';
 import { UpdateMunicipalityDto } from './dto/update-municipality.dto';
@@ -9,7 +9,7 @@ export class MunicipalityController {
 
   @Post()
   create(@Body() createMunicipalityDto: CreateMunicipalityDto) {
-    return this.municipalityService.create(createMunicipalityDto);
+    return this.municipalityService.create(createMunicipalityDto as any);
   }
 
   @Get()
@@ -18,17 +18,17 @@ export class MunicipalityController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.municipalityService.findOne(+id);
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.municipalityService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateMunicipalityDto: UpdateMunicipalityDto) {
-    return this.municipalityService.update(+id, updateMunicipalityDto);
+  update(@Param('id', ParseIntPipe) id: number, @Body() updateMunicipalityDto: UpdateMunicipalityDto) {
+    return this.municipalityService.update(id, updateMunicipalityDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.municipalityService.remove(+id);
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.municipalityService.remove(id);
   }
 }
