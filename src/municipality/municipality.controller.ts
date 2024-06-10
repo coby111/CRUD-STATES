@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { MunicipalityService } from './municipality.service';
 import { CreateMunicipalityDto } from './dto/create-municipality.dto';
 import { UpdateMunicipalityDto } from './dto/update-municipality.dto';
@@ -23,7 +32,10 @@ export class MunicipalityController {
   }
 
   @Patch(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body() updateMunicipalityDto: UpdateMunicipalityDto) {
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateMunicipalityDto: UpdateMunicipalityDto,
+  ) {
     return this.municipalityService.update(id, updateMunicipalityDto);
   }
 

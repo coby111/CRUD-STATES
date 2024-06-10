@@ -6,7 +6,6 @@ import { Prisma, State } from '@prisma/client';
 
 @Injectable()
 export class StateService {
-
   //instancia de prisma
   constructor(private prisma: PrismaService) {}
 
@@ -21,29 +20,31 @@ export class StateService {
       where: {
         name: {
           equals: data.name,
-          mode: "insensitive", // Ignora mayúsculas y minúsculas
+          mode: 'insensitive', // Ignora mayúsculas y minúsculas
         },
       },
     });
-  
+
     if (existingState) {
-      throw new NotFoundException("Ya existe un estado con este nombre.");
+      throw new NotFoundException('Ya existe un estado con este nombre.');
     }
-  
+
     // Verificar si ya existe un estado con el mismo nombre, pero con acentos
     const existingStateWithAccent = await this.prisma.state.findFirst({
       where: {
         name: {
-          equals: data.name.normalize("NFD").replace(/[\u0300-\u036f]/g, ""), // Remover acentos
-          mode: "insensitive", // Ignora mayúsculas y minúsculas
+          equals: data.name.normalize('NFD').replace(/[\u0300-\u036f]/g, ''), // Remover acentos
+          mode: 'insensitive', // Ignora mayúsculas y minúsculas
         },
       },
     });
-  
+
     if (existingStateWithAccent) {
-      throw new NotFoundException("Ya existe un estado con este nombre (incluyendo acentos).");
+      throw new NotFoundException(
+        'Ya existe un estado con este nombre (incluyendo acentos).',
+      );
     }
-  
+
     // Si no hay un estado con el mismo nombre, proceder con la creación
     return this.prisma.state.create({
       data,
@@ -54,40 +55,40 @@ export class StateService {
    * Metodo que devuelve todos los registros de la base de datos
    * @returns Project[]
    */
-  findAll(): Promise<State[]>{
+  findAll(): Promise<State[]> {
     return this.prisma.state.findMany();
   }
 
   /**
    * Metodo que verefica si existe el estado
    * @param id busca el id
-   * @returns 
+   * @returns
    */
   async exists(id: number): Promise<State> {
     const state = await this.prisma.state.findUnique({
-      where:{
-        id
-      }
+      where: {
+        id,
+      },
     });
 
-    if(!state){
-      throw new NotFoundException('Proyecto no encontrado')
+    if (!state) {
+      throw new NotFoundException('Proyecto no encontrado');
     }
     return state;
   }
 
   async findOne(id: number): Promise<State> {
     const state = await this.prisma.state.findUnique({
-      where:{
-        id
+      where: {
+        id,
       },
       include: {
-        municipalities: true
-      }
+        municipalities: true,
+      },
     });
 
-    if(!state){
-      throw new NotFoundException('Estado no encontrado')
+    if (!state) {
+      throw new NotFoundException('Estado no encontrado');
     }
     return state;
   }
@@ -96,31 +97,31 @@ export class StateService {
    * Metodo para actualizar un estado
    * @param id busca el id
    * @param updateStateDto actualiza con los datos proporcionados
-   * @returns 
+   * @returns
    */
   async update(id: number, updateStateDto: UpdateStateDto): Promise<State> {
     //validar que el estado exista
     await this.exists(id);
     return this.prisma.state.update({
-      data: {...updateStateDto} as any,
+      data: { ...updateStateDto } as any,
       where: {
-        id
-      }
-    })
+        id,
+      },
+    });
   }
 
   /**
    * Metodo que elimina un estado
    * @param id elimina por id
-   * @returns 
+   * @returns
    */
   async remove(id: number) {
     //validar que el proyecto existe
     await this.exists(id);
     return this.prisma.state.delete({
-      where:{
-        id
-      }
-    })
+      where: {
+        id,
+      },
+    });
   }
 }

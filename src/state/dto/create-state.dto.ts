@@ -1,3 +1,3 @@
 export class CreateStateDto {
-    name: string;
+  name: string;
 }
