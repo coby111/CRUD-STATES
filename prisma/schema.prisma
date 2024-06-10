@@ -38,25 +38,25 @@ model Locality {
 }
 
 model Customer {
-  id          Int         @id @default(autoincrement()) 
-  name        String      @db.VarChar(128)
-  firstName   String      @db.VarChar(60)
-  lastName    String      @db.VarChar(60)
-  rfc         String      @db.VarChar(13)
-  email       String      @db.VarChar(100)
-  phone       Int
-  status      Boolean     @default(true)
-  address     Address[]
+  id          Int         @id @default(autoincrement())
+  name        String      @db.VarChar(128) // Nombre del cliente
+  firstName   String      @db.VarChar(60)  // Primer nombre
+  lastName    String      @db.VarChar(60)  // Apellido
+  rfc         String      @db.VarChar(13)  // RFC
+  email       String      @db.VarChar(100) // Email
+  phone       String      @db.VarChar(10)         // Teléfono
+  status      Boolean     @default(true)   // Estatus (activo/inactivo)
+  address     Address[]   @relation("CustomerAddress")
 }
 
 model Address {
-  id                Int         @id @default(autoincrement()) 
+  id                Int         @id @default(autoincrement())
   customerId        Int
   localityId        Int
-  street            String      @db.VarChar(128)
-  exteriorNumber    String      @db.VarChar(10)
-  interiorNumber    String      @db.VarChar(10)
-  postalCode        String      @db.VarChar(10)
-  customer          Customer    @relation(fields: [customerId], references: [id])
+  street            String      @db.VarChar(128)  // Calle
+  exteriorNumber    String      @db.VarChar(10)   // Número exterior
+  interiorNumber    String      @db.VarChar(10)   // Número interior
+  postalCode        String      @db.VarChar(10)   // Código postal
+  customer          Customer    @relation("CustomerAddress", fields: [customerId], references: [id])
   locality          Locality    @relation(fields: [localityId], references: [id])
 }

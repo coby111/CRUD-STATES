@@ -1,38 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from 'src/prisma.service';
+import { PrismaService } from '../prisma.service';
 import { CreateCustomerDto } from './dto/create-customer.dto';
-import { Customer } from '@prisma/client';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
 
 @Injectable()
 export class CustomerService {
   constructor(private prisma: PrismaService) {}
 
-  /**
-   * Metodo para registrar un nuevo cliente
-   * @param createCustomerDto Datos del cliente a registrar
-   * @returns Retorna el cliente registrado
-   */
-  async createCustomer(createCustomerDto: CreateCustomerDto) {
-    return this.prisma.customer.create({
-      data: {
-        ...createCustomerDto,
-        address: {
-          create: createCustomerDto.address,
-        },
-      } as any,
-      include: {
-        address: true,
-      },
-    });
-  }
-
-  /**
-   * Metodo para consultar todos los clientes regiatrados
-   * @returns Retorna todos los clientes registrados
-   * incluido su dirección con datos de la localidad, municipio y estado
-   */
-  async findAllCustomers(): Promise<Customer[]> {
+  async findAll() {
     return await this.prisma.customer.findMany({
       include: {
         address: {
@@ -52,37 +27,59 @@ export class CustomerService {
     });
   }
 
-  /**
-   * Meotada para consultar si un cliente esta registrado
-   * @param id ID del cliente
-   * @returns Retorna el cliente si es que esta registrado
-   */
-  async byId(id: number) {
+  async findOne(id: number) {
     const customer = await this.prisma.customer.findUnique({
-      where: {
-        id,
+      where: { id },
+      include: {
+        address: {
+          include: {
+            locality: {
+              include: {
+                municipality: {
+                  include: {
+                    state: true,
+                  },
+                },
+              },
+            },
+          },
+        },
       },
     });
 
     if (!customer) {
-      throw new NotFoundException(`Cliente con id ${id} no encontrado!`);
+      throw new NotFoundException(`Customer with id ${id} not found`);
     }
+
     return customer;
   }
 
-  /**
-   * Metodo para consultar un cliente
-   * incluido su dirección con datos de la localidad, municipio y estado
-   * @param id ID del cliente
-   * @returns Retorna la informacion del cliente
-   */
-  async findOneCustomer(id: number): Promise<Customer> {
-    await this.byId(id);
-
-    return await this.prisma.customer.findUnique({
-      where: {
-        id,
+  async create(createCustomerDto: CreateCustomerDto) {
+    const customerData = {
+      name: createCustomerDto.name,
+      firstName: createCustomerDto.firstName,
+      lastName: createCustomerDto.lastName,
+      rfc: createCustomerDto.rfc,
+      email: createCustomerDto.email,
+      phone: createCustomerDto.phone,
+      status: createCustomerDto.status,
+      address: {
+        create: {
+          street: createCustomerDto.street,
+          exteriorNumber: createCustomerDto.exteriorNumber,
+          interiorNumber: createCustomerDto.interiorNumber,
+          postalCode: createCustomerDto.postalCode,
+          locality: {
+            connect: {
+              id: createCustomerDto.localityId,
+            },
+          },
+        },
       },
+    };
+
+    return await this.prisma.customer.create({
+      data: customerData as any,
       include: {
         address: {
           include: {
@@ -101,38 +98,70 @@ export class CustomerService {
     });
   }
 
-  /**
-   * Metodo para actualizar un cliente
-   * @param id ID del cliente
-   * @param updateCustomerDto Datos del cliente para actualizar
-   * @returns Retorna la informacion actualizada
-   */
-  async updateCustomer(id: number, updateCustomerDto: UpdateCustomerDto) {
-    return this.prisma.customer.update({
+  async update(id: number, updateCustomerDto: UpdateCustomerDto) {
+    const {
+      street,
+      exteriorNumber,
+      interiorNumber,
+      postalCode,
+      localityId,
+      ...customerData
+    } = updateCustomerDto;
+
+    const existingCustomer = await this.prisma.customer.findUnique({
+      where: { id },
+    });
+
+    if (!existingCustomer) {
+      throw new NotFoundException(`Customer with ID ${id} not found`);
+    }
+
+    const existingAddress = await this.prisma.address.findFirst({
+      where: { customerId: id },
+    });
+
+    if (!existingAddress) {
+      throw new NotFoundException(
+        `Address for customer with ID ${id} not found`,
+      );
+    }
+
+    await this.prisma.customer.update({
       where: { id },
       data: {
-        ...updateCustomerDto,
+        ...customerData,
         address: {
-          update: updateCustomerDto.address,
+          update: {
+            where: { id: existingAddress.id },
+            data: {
+              street,
+              exteriorNumber,
+              interiorNumber,
+              postalCode,
+              localityId,
+            },
+          },
         },
-      } as any,
+      },
       include: {
         address: true,
       },
     });
+
+    return this.findOne(id);
   }
 
-  /**
-   * Metodo para eliminar un cliente
-   * @param id ID del cliente a eliminar
-   * @returns Retorna el cliente eliminado
-   */
-  async removeCustomer(id: number): Promise<Customer> {
-    await this.byId(id);
-    return this.prisma.customer.delete({
-      where: {
-        id,
-      },
+  async remove(id: number) {
+    const customer = await this.prisma.customer.findUnique({
+      where: { id },
+    });
+
+    if (!customer) {
+      throw new NotFoundException(`Customer with id ${id} not found`);
+    }
+
+    return await this.prisma.customer.delete({
+      where: { id },
     });
   }
 }

@@ -1,11 +1,21 @@
-import { CreateAddressDto } from 'src/address/dto/create-address.dto';
 export class UpdateCustomerDto {
   name?: string;
   firstName?: string;
-  lastname?: string;
+  lastName?: string;
   rfc?: string;
+  street?: string;
+  exteriorNumber?: string;
+  interiorNumber?: string;
+  postalCode?: string;
+  localityId?: number;
   email?: string;
-  phone?: string;
+  phone?: number;
   status?: boolean;
-  address?: CreateAddressDto;
+  address: {
+    street: string;
+    exteriorNumber: string;
+    interiorNumber: string;
+    postalCode: string;
+    localityId: number;
+  };
 }
