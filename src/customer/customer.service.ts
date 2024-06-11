@@ -2,12 +2,17 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
+import { Address, Customer } from '@prisma/client';
 
 @Injectable()
 export class CustomerService {
   constructor(private prisma: PrismaService) {}
 
-  async findAll() {
+  /**
+   * Obtiene una lista de todos los clientes.
+   * @returns {Promise<Customer[]>} Una promesa que resuelve con una lista de clientes.
+   */
+  async findAllCustomers(): Promise<Customer[]> {
     return await this.prisma.customer.findMany({
       include: {
         address: {
@@ -27,8 +32,52 @@ export class CustomerService {
     });
   }
 
-  async findOne(id: number) {
+  /**
+   * Busca un cliente por su ID
+   * @param id ID del cliente
+   * @returns Retorna la informacion del cliente
+   */
+  async findOneCustomerById(id: number): Promise<Customer> {
     const customer = await this.prisma.customer.findUnique({
+      where: {
+        id,
+      },
+    });
+
+    if (!customer) {
+      throw new NotFoundException(`Cliente con id ${id} no encontrado!`);
+    }
+    return customer;
+  }
+
+  /**
+   * Busca la direccion de un cliente por su ID de cliente
+   * @param customerId ID del clienrte
+   * @returns Retorna la direccion encontrada
+   */
+  async findAddressByCustumerId(customerId: number): Promise<Address> {
+    const address = await this.prisma.address.findFirst({
+      where: {
+        customerId,
+      },
+    });
+
+    if (!address) {
+      throw new NotFoundException(
+        `Dirección del cliente con id ${customerId} no encontrada!`,
+      );
+    }
+    return address;
+  }
+
+  /**
+   * Obtiene un cliente con todos los detalles incluyendo la direccion.
+   * @param id ID del cliente
+   * @returns Retorna el ccliente encontrado
+   */
+  async findOneCustomer(id: number): Promise<Customer> {
+    await this.findOneCustomerById(id);
+    return await this.prisma.customer.findUnique({
       where: { id },
       include: {
         address: {
@@ -46,15 +95,16 @@ export class CustomerService {
         },
       },
     });
-
-    if (!customer) {
-      throw new NotFoundException(`Customer with id ${id} not found`);
-    }
-
-    return customer;
   }
 
-  async create(createCustomerDto: CreateCustomerDto) {
+  /**
+   * Crea un nuevo cliente
+   * @param createCustomerDto - Datos para crear el cliente
+   * @returns Retorna el cliente creado
+   */
+  async createCustomer(
+    createCustomerDto: CreateCustomerDto,
+  ): Promise<Customer> {
     const customerData = {
       name: createCustomerDto.name,
       firstName: createCustomerDto.firstName,
@@ -98,7 +148,17 @@ export class CustomerService {
     });
   }
 
-  async update(id: number, updateCustomerDto: UpdateCustomerDto) {
+  /**
+   * Actualiza un cliente existente
+   * @param id ID del cliente
+   * @param updateCustomerDto - Datos para actualizar el cliente
+   * @returns Retorna rl cliente actualizado
+   */
+  async updateCustomer(
+    id: number,
+    updateCustomerDto: UpdateCustomerDto,
+  ): Promise<Customer> {
+    await this.findOneCustomerById(id);
     const {
       street,
       exteriorNumber,
@@ -108,23 +168,7 @@ export class CustomerService {
       ...customerData
     } = updateCustomerDto;
 
-    const existingCustomer = await this.prisma.customer.findUnique({
-      where: { id },
-    });
-
-    if (!existingCustomer) {
-      throw new NotFoundException(`Customer with ID ${id} not found`);
-    }
-
-    const existingAddress = await this.prisma.address.findFirst({
-      where: { customerId: id },
-    });
-
-    if (!existingAddress) {
-      throw new NotFoundException(
-        `Address for customer with ID ${id} not found`,
-      );
-    }
+    const existingAddress = await this.findAddressByCustumerId(id);
 
     await this.prisma.customer.update({
       where: { id },
@@ -148,19 +192,24 @@ export class CustomerService {
       },
     });
 
-    return this.findOne(id);
+    return this.findOneCustomer(id);
   }
 
-  async remove(id: number) {
-    const customer = await this.prisma.customer.findUnique({
-      where: { id },
+  /**
+   * Eliminar un cliente por su ID
+   * @param id ID del cliente
+   * @returns Retorna el cliente eliminado
+   */
+  async removeCustomer(id: number): Promise<Customer> {
+    await this.findOneCustomerById(id);
+
+    await this.prisma.address.deleteMany({
+      where: {
+        customerId: id,
+      },
     });
 
-    if (!customer) {
-      throw new NotFoundException(`Customer with id ${id} not found`);
-    }
-
-    return await this.prisma.customer.delete({
+    return this.prisma.customer.delete({
       where: { id },
     });
   }

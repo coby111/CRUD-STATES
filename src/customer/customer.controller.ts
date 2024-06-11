@@ -6,7 +6,6 @@ import {
   Delete,
   Param,
   Body,
-  NotFoundException,
   ParseIntPipe,
 } from '@nestjs/common';
 import { CustomerService } from './customer.service';
@@ -17,35 +16,55 @@ import { CreateCustomerDto } from './dto/create-customer.dto';
 export class CustomerController {
   constructor(private readonly customerService: CustomerService) {}
 
+  /**
+   * Metodo que obtiene todos los clientes
+   * @returns Retorna una lista de clientes encontrados
+   */
   @Get()
-  async getAllCustomers() {
-    return await this.customerService.findAll();
+  findAll() {
+    return this.customerService.findAllCustomers();
   }
 
+  /**
+   * Metodo para obtener un cliente por su ID
+   * @param id - ID del cliente
+   * @returns Retorna el cliente endontrado
+   */
   @Get(':id')
-  async getCustomerById(@Param('id') id: number) {
-    const customer = await this.customerService.findOne(id);
-    if (!customer) {
-      throw new NotFoundException(`Customer with id ${id} not found`);
-    }
-    return customer;
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.customerService.findOneCustomer(id);
   }
 
+  /**
+   * Metodod para crear un cliente
+   * @param createCustomerDto Informacion con la que se creara el cliente
+   * @return Retorna el cliente creado
+   */
   @Post()
-  async createCustomer(@Body() createCustomerDto: CreateCustomerDto) {
-    return await this.customerService.create(createCustomerDto);
+  create(@Body() createCustomerDto: CreateCustomerDto) {
+    return this.customerService.createCustomer(createCustomerDto);
   }
 
+  /**
+   * Metodo para actualizar un cliente
+   * @param id - ID del cliente
+   * @param updateCustomerDto Datos con la que se actualizara el cliente
+   * @returns Retorna el cliente actualzado
+   */
   @Put(':id')
-  async updateCustomer(
+  update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateCustomerDto: UpdateCustomerDto,
   ) {
-    return await this.customerService.update(id, updateCustomerDto);
+    return this.customerService.updateCustomer(id, updateCustomerDto);
   }
 
+  /**
+   * Metodo para eliminar un cliente
+   * @param id - ID del cliente
+   */
   @Delete(':id')
-  async deleteCustomer(@Param('id') id: number) {
-    await this.customerService.remove(id);
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.customerService.removeCustomer(id);
   }
 }
