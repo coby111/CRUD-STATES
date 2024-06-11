@@ -1,9 +1,10 @@
 import { Module } from '@nestjs/common';
-import { MunicipalityController } from './municipality.controller';
 import { MunicipalityService } from './municipality.service';
+import { MunicipalityController } from './municipality.controller';
+import { PrismaService } from 'src/prisma.service';
 
 @Module({
   controllers: [MunicipalityController],
-  providers: [MunicipalityService],
+  providers: [MunicipalityService, PrismaService],
 })
 export class MunicipalityModule {}
