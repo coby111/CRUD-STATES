@@ -9,7 +9,7 @@ export class UpdateCustomerDto {
   postalCode?: string;
   localityId?: number;
   email?: string;
-  phone?: number;
+  phone?: string;
   status?: boolean;
   address: {
     street: string;
