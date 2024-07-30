@@ -9,9 +9,11 @@ import { CustomerModule } from './customer/customer.module';
 import { StateModule } from './state/state.module';
 import { MunicipalityModule } from './municipality/municipality.module';
 import { AddressModule } from './address/address.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({isGlobal: true}),
     StateModule,
     MunicipalityModule,
     LocalityModule,
